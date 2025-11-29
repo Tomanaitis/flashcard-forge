@@ -151,28 +151,11 @@ st.markdown("Instant AI-powered flashcard generator with multilingual support.")
 
 # --- Input Handling (PDF or Text Area) ---
 
-# 1. User selects the input method
-input_method = st.radio(
-    "Choose your input method:",
-    ("Paste Text", "Upload PDF"),
-    horizontal=True,
-    index=0 # Defaults to Paste Text
+# Input Method Selection
+uploaded_file = st.file_uploader(
+    "Upload a PDF file (Optional)",
+    type=['pdf']
 )
-
-# 2. Logic branches based on the selection
-if input_method == "Upload PDF":
-    # PDF option only appears when selected
-    uploaded_file = st.file_uploader(
-        "Upload your study material (PDF only):",
-        type=['pdf']
-    )
-    # ... logic for processing PDF ...
-elif input_method == "Paste Text":
-    # Text area appears when selected
-    text_input = st.text_area(
-        "Paste your study material here:",
-        # ... logic for text area ...
-    )
 
 # Text storage variable
 text_to_process = ""
