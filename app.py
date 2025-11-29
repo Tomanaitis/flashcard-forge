@@ -178,7 +178,7 @@ if input_method == "Upload PDF":
         else:
             st.warning("Could not extract enough text from the PDF. Please try a different file.")
 
-elif input_method == "Text":
+elif input_method == "Paste Text":
     # Text area appears when selected
     text_input = st.text_area(
         "Provide your text here:",
