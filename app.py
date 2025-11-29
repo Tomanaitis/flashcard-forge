@@ -2,7 +2,7 @@ import streamlit as st
 import os
 import json
 import io
-import requests  # <-- REQUIRED FOR LIVE API CALLS
+import requests
 from pypdf import PdfReader
 from typing import List, Dict, Any
 
@@ -45,7 +45,6 @@ def call_gemini_api_with_retry(payload: Dict[str, Any], max_retries: int = 5) ->
     """
     if not API_KEY:
         st.error("API Key not found. Please set the GEMINI_API_KEY environment variable.")
-        # Return an empty JSON structure on failure
         return '{"candidates": [{"content": {"parts": [{"text": "[]"}]}}]}'
 
     headers = {
@@ -58,26 +57,21 @@ def call_gemini_api_with_retry(payload: Dict[str, Any], max_retries: int = 5) ->
     for attempt in range(max_retries):
         try:
             response = requests.post(full_url, headers=headers, data=json.dumps(payload))
-            response.raise_for_status()  # Raises an HTTPError for bad responses (4xx or 5xx)
+            response.raise_for_status()
             return response.text
 
         except requests.exceptions.HTTPError as e:
-            # Handle specific HTTP errors
             st.error(f"API HTTP Error (Attempt {attempt + 1}): {e.response.status_code} - {e.response.text}")
             if e.response.status_code in [429, 500, 503] and attempt < max_retries - 1:
-                # Exponential backoff for rate limiting or server errors
                 wait_time = 2 ** attempt
-                # print(f"Retrying in {wait_time} seconds...")
-                # time.sleep(wait_time) # removed time.sleep due to streamlit context
                 continue
             else:
                 raise e
         except requests.exceptions.RequestException as e:
-            # Handle other request errors (e.g., network issues)
             st.error(f"API Request Error (Attempt {attempt + 1}): {e}")
             raise e
 
-    return '{"candidates": [{"content": {"parts": [{"text": "[]"}]}}]}'  # Should not be reached
+    return '{"candidates": [{"content": {"parts": [{"text": "[]"}]}}]}'
 
 
 def generate_flashcards(text_input: str, num_cards: int, difficulty: str, q_lang: str, a_lang: str) -> List[
@@ -137,7 +131,6 @@ def generate_flashcards(text_input: str, num_cards: int, difficulty: str, q_lang
         return flashcards
 
     except Exception as e:
-        # Display the specific error that caused the issue
         st.error(f"An error occurred during API call or parsing: {e}")
         return []
 
@@ -149,35 +142,46 @@ st.set_page_config(layout="wide", page_title="Flashcard Forge ⚡")
 st.title("Flashcard Forge ⚡")
 st.markdown("Instant AI-powered flashcard generator with multilingual support.")
 
-# --- Input Handling (PDF or Text Area) ---
+# --- Input Handling (Selection between Text and PDF) ---
 
-# Input Method Selection
-uploaded_file = st.file_uploader(
-    "Upload a PDF file (Optional)",
-    type=['pdf']
+# Variable initialization
+text_to_process = ""
+uploaded_file = None
+
+# 1. User selects the input method
+input_method = st.radio(
+    "Choose your input method:",
+    ("Paste Text", "Upload PDF"),
+    horizontal=True,
+    index=0  # Defaults to Paste Text
 )
 
-# Text storage variable
-text_to_process = ""
-
 # Default text for new users
-default_text_example = ""
+default_text_example = "Paste any study material, notes, or key concepts below to instantly generate custom flashcards."
 
-if uploaded_file is not None:
-    # PDF is uploaded, extract text from it
-    with st.spinner(f"Extracting text from PDF: {uploaded_file.name}..."):
-        full_text = get_text_from_pdf(uploaded_file)
+if input_method == "Upload PDF":
+    # PDF uploader only appears when selected
+    uploaded_file = st.file_uploader(
+        "Upload your study material (PDF only):",
+        type=['pdf']
+    )
 
-    if full_text:
-        st.success(f"Text extracted from **{uploaded_file.name}**. Scroll down to configure cards.")
-        st.text_area("Extracted Document Text (read-only):", full_text, height=250, disabled=True)
-        text_to_process = full_text
-    else:
-        st.warning("Could not extract enough text from the PDF. Please try a different file.")
-else:
-    # No PDF, use manual text area input
+    if uploaded_file is not None:
+        # PDF is uploaded, extract text from it
+        with st.spinner(f"Extracting text from PDF: {uploaded_file.name}..."):
+            full_text = get_text_from_pdf(uploaded_file)
+
+        if full_text:
+            st.success(f"Text extracted from **{uploaded_file.name}**. Scroll down to configure cards.")
+            st.text_area("Extracted Document Text (read-only):", full_text, height=250, disabled=True)
+            text_to_process = full_text
+        else:
+            st.warning("Could not extract enough text from the PDF. Please try a different file.")
+
+elif input_method == "Paste Text":
+    # Text area appears when selected
     text_input = st.text_area(
-        "Paste any study material, notes, or key concepts below to instantly generate custom flashcards.",
+        "Paste your study material here:",
         default_text_example,
         height=250,
         placeholder="Paste text from your notes or textbook..."
@@ -189,8 +193,8 @@ st.header("Flashcard Configuration")
 with st.container():
     col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
 
-    # 1. Number of Cards
-    num_cards = col1.slider("Number of Flashcards", 3, 100, 10)  # Defaulting to 10 cards
+    # 1. Number of Cards (Default 5)
+    num_cards = col1.slider("Number of Flashcards", 3, 20, 5)
 
     # 2. Difficulty Level
     difficulty = col2.selectbox(
@@ -225,13 +229,11 @@ if st.button("Generate Flashcards", use_container_width=True, type="primary"):
 
                 # Display Flashcards with answers hidden behind a second expander
                 for i, card in enumerate(flashcards):
-                    # Outer expander for the question
+                    # Outer expander uses the question as its header
                     with st.expander(f"**Card {i + 1}:** {card.get('question', 'N/A')} **(Q: {question_lang})**",
                                      expanded=False):
-                        #st.markdown(f"**Question:** {card.get('question', 'N/A')}")
-
                         # Nested expander to hide the answer
-                        #with st.expander("👉 Show Answer", expanded=False):
+                        with st.expander("👉 Show Answer", expanded=False):
                             st.markdown(f"**Answer:** {card.get('answer', 'N/A')} **(A: {answer_lang})**")
 
                 # Download Button (Markdown format)
