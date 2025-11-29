@@ -161,7 +161,7 @@ uploaded_file = st.file_uploader(
 text_to_process = ""
 
 # Default text for new users
-default_text_example = "Paste any study material, notes, or key concepts below to instantly generate custom flashcards."
+default_text_example = ""
 
 if uploaded_file is not None:
     # PDF is uploaded, extract text from it
