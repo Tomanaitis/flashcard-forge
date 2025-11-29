@@ -1,0 +1,12 @@
+.env
+.venv/
+venv/
+env/
+.idea/
+__pycache__/
+*.pyc
+*.o
+*.so
+*.idea/
+*.vscode/
+*.streamlit/
