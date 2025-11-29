@@ -151,7 +151,7 @@ uploaded_file = None
 # 1. User selects the input method
 input_method = st.radio(
     "Choose your input method:",
-    ("Paste Text", "Upload PDF"),
+    ("Text", "Upload PDF"),
     horizontal=True,
     index=0  # Defaults to Paste Text
 )
@@ -178,16 +178,15 @@ if input_method == "Upload PDF":
         else:
             st.warning("Could not extract enough text from the PDF. Please try a different file.")
 
-elif input_method == "Paste Text":
+elif input_method == "Text":
     # Text area appears when selected
     text_input = st.text_area(
         "Provide your text here:",
         default_text_example,
         height=250,
-        placeholder="Python programming language",
+        placeholder="Python programming language/Health and fitness/biology",
     )
     text_to_process = text_input
-# "Python programming language/Health and fitness/biology"
 # --- Configuration Panel ---
 st.header("Flashcard Configuration")
 with st.container():
