@@ -44,7 +44,7 @@ def generate_flashcards(topic: str, num_cards: int = 10, difficulty: str = "inte
         print(pretty_text)
         save_to_markdown(pretty_text, topic)
 
-    return cards  # This is what app.py needs!
+    return cards  # This is what app.old needs!
 
 
 # Keep your old CLI working perfectly

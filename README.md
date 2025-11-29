@@ -3,7 +3,7 @@
 Instant AI-powered flashcard generator.
 Create perfect study flashcards from custom text or PDF documents — in seconds.
 
-👉 Live App: https://flashcard-forge-gfm2ad4o5wgugkwfmgpqv5.streamlit.app/
+👉 Live App: https://flashcard-forge-anmvk43bnuclk6yuntysxp.streamlit.app/
 
 No install · No signup · Works on any device.
 
@@ -34,7 +34,7 @@ python main.py
 
 🧪 Try It Now
 
-👉 https://flashcard-forge-gfm2ad4o5wgugkwfmgpqv5.streamlit.app/
+👉 https://flashcard-forge-anmvk43bnuclk6yuntysxp.streamlit.app/
 
 🛠️ Local Installation (Optional)
 1. Clone the repository
