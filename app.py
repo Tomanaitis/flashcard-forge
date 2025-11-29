@@ -157,7 +157,7 @@ input_method = st.radio(
 )
 
 # Default text for new users
-default_text_example = "Paste any study material, notes, or key concepts below to instantly generate custom flashcards."
+default_text_example = ""
 
 if input_method == "Upload PDF":
     # PDF uploader only appears when selected
