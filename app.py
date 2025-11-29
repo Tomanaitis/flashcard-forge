@@ -152,7 +152,6 @@ st.markdown("Instant AI-powered flashcard generator with multilingual support.")
 # Input Text Area
 text_input = st.text_area(
     "Paste your study material here (Text or PDF content):",
-    "La física es la ciencia natural que estudia la materia, sus constituyentes fundamentales, su movimiento y comportamiento a través del espacio y el tiempo, y las entidades relacionadas de energía y fuerza.",
     height=250,
     placeholder="Paste text from your notes, textbook, or document..."
 )
