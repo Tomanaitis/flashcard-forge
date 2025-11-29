@@ -1,7 +1,8 @@
 import streamlit as st
 import os
 import json
-import time
+import io
+from pypdf import PdfReader
 from typing import List, Dict, Any
 
 # --- API Configuration and Constants ---
@@ -19,6 +20,21 @@ LANGUAGES = [
 ]
 
 
+# --- PDF Processing Function ---
+
+def get_text_from_pdf(uploaded_file: io.BytesIO) -> str:
+    """Extracts text content from an uploaded PDF file."""
+    try:
+        reader = PdfReader(uploaded_file)
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() or ""
+        return text
+    except Exception as e:
+        st.error(f"Error processing PDF: {e}")
+        return ""
+
+
 # --- Helper Functions for API Call (Simulated for instructional purposes) ---
 
 def call_gemini_api_with_retry(payload: Dict[str, Any], max_retries: int = 5) -> str:
@@ -32,14 +48,11 @@ def call_gemini_api_with_retry(payload: Dict[str, Any], max_retries: int = 5) ->
     """
     if not API_KEY:
         st.error("API Key not found. Please set the GEMINI_API_KEY environment variable.")
-        # Returning an empty structured JSON array to simulate a failed call
         return '{"candidates": [{"content": {"parts": [{"text": "[]"}]}}]}'
 
     # --- Start Simulation for Demonstration ---
 
     # Extracting parameters from the payload to create a dynamic fake response
-
-    # Simple logic to show the multilingual effect
     system_instruction = payload['systemInstruction']['parts'][0]['text']
     q_lang_match = system_instruction.split("MUST be written in **")[1].split("**")[0]
     a_lang_match = system_instruction.split("MUST be written in **")[2].split("**")[0]
@@ -48,9 +61,9 @@ def call_gemini_api_with_retry(payload: Dict[str, Any], max_retries: int = 5) ->
 
     if q_lang_match == "Spanish" and a_lang_match == "English":
         simulated_response = [
-            {"question": "¿Cuál es el concepto clave de este texto?",
+            {"question": "Cuál es el concepto clave de este texto?",
              "answer": "The main concept discussed is the use of multilingual models for cross-language tasks."},
-            {"question": "¿Cómo se llama el modelo de lenguaje utilizado?",
+            {"question": "Cómo se llama el modelo de lenguaje utilizado?",
              "answer": "The language model used for generation is Gemini 2.5 Flash."}
         ]
     elif q_lang_match == "French" and a_lang_match == "German":
@@ -149,14 +162,30 @@ st.set_page_config(layout="wide", page_title="Flashcard Forge ⚡")
 st.title("Flashcard Forge ⚡")
 st.markdown("Instant AI-powered flashcard generator with multilingual support.")
 
-# Input Text Area
-text_input = st.text_area(
-    "Paste your study material here (Text or PDF content):",
-    height=250,
-    placeholder="Paste text from your notes, textbook, or document..."
+# Input Method Selection
+uploaded_file = st.file_uploader(
+    "Upload a PDF file (Optional)",
+    type=['pdf']
 )
 
+if uploaded_file is not None:
+    # PDF is uploaded, extract text from it
+    with st.spinner("Extracting text from PDF..."):
+        full_text = get_text_from_pdf(uploaded_file)
+    st.info(f"Text extracted from **{uploaded_file.name}**. Scroll down to generate flashcards.")
+    st.text_area("Extracted Document Text (read-only):", full_text, height=250, disabled=True)
+    text_to_process = full_text
+else:
+    # No PDF, use manual text area input
+    text_input = st.text_area(
+        "Paste your study material here:",
+        height=250,
+        placeholder="Paste text from your notes or textbook... (min 50 chars)"
+    )
+    text_to_process = text_input
+
 # Configuration Panel
+st.header("Flashcard Configuration")
 with st.container():
     col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
 
@@ -169,14 +198,14 @@ with st.container():
         ["Beginner", "Intermediate", "Advanced"]
     )
 
-    # 3. Question Language (NEW)
+    # 3. Question Language
     question_lang = col3.selectbox(
         "Question Language",
         LANGUAGES,
         index=LANGUAGES.index("Spanish") if "Spanish" in LANGUAGES else 0
     )
 
-    # 4. Answer Language (NEW)
+    # 4. Answer Language
     answer_lang = col4.selectbox(
         "Answer Language",
         LANGUAGES,
@@ -185,18 +214,17 @@ with st.container():
 
 # Generation Button
 if st.button("Generate Flashcards", use_container_width=True, type="primary"):
-    if not text_input or len(text_input) < 50:
-        st.warning("Please paste at least a short paragraph of text to generate flashcards.")
+    if not text_to_process or len(text_to_process) < 50:
+        st.warning("Please provide at least 50 characters of text (via paste or PDF) to generate flashcards.")
     else:
         with st.spinner(f"Generating {num_cards} flashcards (Q: {question_lang} | A: {answer_lang})..."):
-            flashcards = generate_flashcards(text_input, num_cards, difficulty, question_lang, answer_lang)
+            flashcards = generate_flashcards(text_to_process, num_cards, difficulty, question_lang, answer_lang)
 
             if flashcards:
                 st.success(f"Successfully generated {len(flashcards)} flashcards!")
 
                 # Display Flashcards
                 for i, card in enumerate(flashcards):
-                    # Added language context to the expander for clarity
                     with st.expander(f"**Card {i + 1}** (Q: {question_lang} | A: {answer_lang})", expanded=True):
                         st.markdown(f"**Question:** {card.get('question', 'N/A')}")
                         st.markdown("---")
