@@ -177,7 +177,7 @@ if uploaded_file is not None:
 else:
     # No PDF, use manual text area input
     text_input = st.text_area(
-        "Paste your study material here:",
+        "Paste any study material, notes, or key concepts below to instantly generate custom flashcards.",
         default_text_example,
         height=250,
         placeholder="Paste text from your notes or textbook..."
