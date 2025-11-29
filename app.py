@@ -200,7 +200,7 @@ uploaded_file = st.file_uploader(
 text_to_process = ""
 
 # Default text in English for the text area
-default_text_example = "Physics is the natural science that studies matter, its fundamental constituents, its motion and behavior through space and time, and the related entities of energy and force. The key concepts are mass, motion, and energy."
+default_text_example = "Paste any study material, notes, or key concepts below to instantly generate custom flashcards."
 
 if uploaded_file is not None:
     # PDF is uploaded, extract text from it
@@ -216,7 +216,7 @@ if uploaded_file is not None:
 else:
     # No PDF, use manual text area input
     text_input = st.text_area(
-        "Paste your study material here:",
+        "",
         default_text_example,
         height=250,
         placeholder="Paste text from your notes or textbook... (minimum 50 characters)"
