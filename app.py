@@ -190,7 +190,7 @@ with st.container():
     col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
 
     # 1. Number of Cards
-    num_cards = col1.slider("Number of Flashcards", 3, 20, 10)  # Defaulting to 10 cards
+    num_cards = col1.slider("Number of Flashcards", 3, 20, 10, 100)  # Defaulting to 10 cards
 
     # 2. Difficulty Level
     difficulty = col2.selectbox(
